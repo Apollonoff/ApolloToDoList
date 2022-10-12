@@ -9,15 +9,18 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
     
-    var cellArray: [String] = ["clean teeth", "take a bath", "learn ios development"]
-    
+    var cellArray = [Item]()
     let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let items = defaults.array(forKey: "ToDoListArray") as? [String]{
+        if let items = defaults.array(forKey: "ToDoListArray") as? [Item]{
             cellArray = items
         }
+        //test model
+        let newItem = Item()
+        newItem.title = "find solution"
+        cellArray.append(newItem)
     }
 
     //MARK: - tableview features
@@ -29,21 +32,25 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-        cell.textLabel?.text = cellArray[indexPath.row]
+        
+        let item = cellArray[indexPath.row]
+        cell.textLabel?.text = item.title
+        
+        if item.done == true{
+            cell.accessoryType = .checkmark
+        } else {
+            cell.accessoryType = .none
+        }
         return cell 
     }
     
     //MARK: - tableView delegate
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(indexPath.row)
-        print(cellArray[indexPath.row])
         
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark{
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        cellArray[indexPath.row].done = !cellArray[indexPath.row].done
+        
+        tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -57,7 +64,10 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add item", style: .default) {
             (action) in
             //Add new item at zero position of Array that improve list cell to look better
-            self.cellArray.insert(textField.text!, at: 0)
+            let newItem = Item()
+            newItem.title = textField.text!
+            self.cellArray.append(newItem)
+            
             //Add our Array to Data of Phone..
             self.defaults.set(self.cellArray, forKey: "ToDoListArray")
             //reload data
