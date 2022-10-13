@@ -16,10 +16,12 @@ class TodoListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //test model
-        let newItem = Item()
-        newItem.title = "find solution"
-        cellArray.append(newItem)
+//        //test model
+//        let newItem = Item()
+//        newItem.title = "find solution"
+//        cellArray.append(newItem)
+        
+        loadItems()
     }
 
     //MARK: - tableview features
@@ -45,8 +47,8 @@ class TodoListViewController: UITableViewController {
         cellArray[indexPath.row].done = !cellArray[indexPath.row].done
         
         self.saveItems()
+        self.loadItems()
         
-        tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -65,9 +67,7 @@ class TodoListViewController: UITableViewController {
             
             //Add our Array to Data of Phone..
             self.saveItems()
-            
-            //reload data
-            self.tableView.reloadData()
+            self.loadItems()
         }
         
         alert.addAction(action)
@@ -90,6 +90,19 @@ class TodoListViewController: UITableViewController {
         } catch {
             print(error)
         }
+        self.tableView.reloadData()
+    }
+    
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+                try cellArray = decoder.decode([Item].self, from: data)
+            } catch {
+                print(error)
+            }
+        }
+        self.tableView.reloadData()
     }
 
 }
