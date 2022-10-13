@@ -10,13 +10,12 @@ import UIKit
 class TodoListViewController: UITableViewController {
     
     var cellArray = [Item]()
-    let defaults = UserDefaults.standard
-
+    
+    //Add File Manager that save our ToDoList Information
+    var dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let items = defaults.array(forKey: "ToDoListArray") as? [Item]{
-            cellArray = items
-        }
         //test model
         let newItem = Item()
         newItem.title = "find solution"
@@ -35,12 +34,7 @@ class TodoListViewController: UITableViewController {
         
         let item = cellArray[indexPath.row]
         cell.textLabel?.text = item.title
-        
-        if item.done == true{
-            cell.accessoryType = .checkmark
-        } else {
-            cell.accessoryType = .none
-        }
+        cell.accessoryType = item.done ? .checkmark : .none
         return cell 
     }
     
@@ -49,6 +43,8 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         cellArray[indexPath.row].done = !cellArray[indexPath.row].done
+        
+        self.saveItems()
         
         tableView.reloadData()
         
@@ -63,13 +59,13 @@ class TodoListViewController: UITableViewController {
         let alert = UIAlertController(title: "Add new To-Do item", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add item", style: .default) {
             (action) in
-            //Add new item at zero position of Array that improve list cell to look better
             let newItem = Item()
             newItem.title = textField.text!
             self.cellArray.append(newItem)
             
             //Add our Array to Data of Phone..
-            self.defaults.set(self.cellArray, forKey: "ToDoListArray")
+            self.saveItems()
+            
             //reload data
             self.tableView.reloadData()
         }
@@ -82,6 +78,18 @@ class TodoListViewController: UITableViewController {
         
         present(alert, animated: true)
         
+    }
+    
+    //MARK: - Model Manipulation methods
+    
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        do {
+            let data = try encoder.encode(cellArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print(error)
+        }
     }
 
 }
